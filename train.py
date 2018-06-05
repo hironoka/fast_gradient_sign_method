@@ -12,22 +12,23 @@ def train_epoch(args, net, device, train_data, optimizer, epoch):
     losses = 0
     correct = 0
 
+    # 1875
     for batch_idx, (data, target) in enumerate(tqdm(train_data)):
 
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
 
+        # 32 * 1 * 28 * 28
+
         y_pred = net(data)
 
         creterion = nn.CrossEntropyLoss()
         loss = creterion(y_pred, target)
-        #謎，格好の位置おかしくない
-
         loss.backward()
         optimizer.step()
 
         losses += loss
-        pred = y_pred.max(1, keepdim=True)[1] # get the index of the max
+        pred = y_pred.max(1)[1] # get the index of the max
         correct += pred.eq(target.view_as(pred)).sum().item()
 
     train_loss = losses / batch_idx

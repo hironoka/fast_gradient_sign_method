@@ -1,11 +1,13 @@
 import argparse
 import torch
 import torch.nn as nn
+import torch.optim as optim
 import numpy as np
 from PIL import Image
 import random
 
 import model
+
 
 def generate_adversarial_examples(args):
     eps = args.eps
@@ -16,9 +18,13 @@ def generate_adversarial_examples(args):
     param = torch.load('mnist_model_params.pth')
     net.load_state_dict(param)
 
+    optimizer = optim.SGD(net.parameters(), lr=0.004)
+    optimizer.zero_grad()
+
     # 適当に1枚選ぶ
     i = random.randint(0, len(data)-1)
     x = torch.from_numpy(data[i]).view(-1,1,28,28)
+    x = nn.Parameter(x)
     y = torch.from_numpy(np.array([target[i]]))
 
     y_pred = net(x)
@@ -27,9 +33,11 @@ def generate_adversarial_examples(args):
 
     creterion = nn.CrossEntropyLoss()
     loss = creterion(y_pred, y)
-    loss.backward()
 
-    adv_sample = x.view(28,28).numpy() + eps * np.sign(x.data.view(28,28).numpy())
+    loss.backward()
+    optimizer.step()
+
+    adv_sample = x.data.view(28,28).numpy() + eps * np.sign(x.grad.view(28,28).numpy())
 
     pil_img = Image.fromarray(adv_sample)
     if pil_img.mode != "RGB":
@@ -45,6 +53,6 @@ if __name__ == '__main__':
     parser.add_argument('--eps', type=int, default=0.01,
                         help='Epsilon')
     args = parser.parse_args()
-    
+
 
     generate_adversarial_examples(args)
