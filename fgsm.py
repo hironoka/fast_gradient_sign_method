@@ -53,7 +53,7 @@ def generate_adversarial_examples(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MNIST TRAINING')
-    parser.add_argument('--eps', type=int, default=0.25,
+    parser.add_argument('--eps', type=int, default=0.001,
                         help='Epsilon')
     args = parser.parse_args()
 
