@@ -19,7 +19,8 @@ def train_epoch(args, net, device, train_data, optimizer, epoch):
 
         y_pred = net(data)
 
-        loss = nn.CrossEntropyLoss()(y_pred, target)
+        creterion = nn.CrossEntropyLoss()
+        loss = creterion(y_pred, target)
         #謎，格好の位置おかしくない
 
         loss.backward()
