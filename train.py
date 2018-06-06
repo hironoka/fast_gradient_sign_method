@@ -1,9 +1,8 @@
 import torch
-# from torchvision import datasets, transforms
 import torch.nn as nn
 import torch.nn.functional as F
-
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 
@@ -11,14 +10,12 @@ def train_epoch(args, net, device, train_data, optimizer, epoch):
     net.train()
     losses = 0
     correct = 0
+    num = len(train_data.dataset)
 
-    # 1875
     for batch_idx, (data, target) in enumerate(tqdm(train_data)):
 
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
-
-        # 32 * 1 * 28 * 28
 
         y_pred = net(data)
 
@@ -28,28 +25,33 @@ def train_epoch(args, net, device, train_data, optimizer, epoch):
         optimizer.step()
 
         losses += loss
-        pred = y_pred.max(1)[1] # get the index of the max
+        pred = y_pred.max(1)[1]
         correct += pred.eq(target.view_as(pred)).sum().item()
 
-    train_loss = losses / batch_idx
     print('Train set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
-        losses / batch_idx, correct, len(train_data.dataset),
-        100. * correct / len(train_data.dataset))
-    )
+        losses / batch_idx, correct, num, 100. * correct / num))
+
+    return float(losses / batch_idx), 100. * correct / num
+
 
 def test_epoch(args, net, device, test_data):
     net.eval()
-    test_loss = 0
+    losses = 0
     correct = 0
+    num = len(test_data.dataset)
+
     with torch.no_grad():
         for data, target in test_data:
             data, target = data.to(device), target.to(device)
-            output = net(data)
-            test_loss += F.nll_loss(output, target, size_average=False).item() # sum up
-            pred = output.max(1, keepdim=True)[1] # get the index of the max
+            y_pred = net(data)
+
+            creterion = nn.CrossEntropyLoss()
+            loss = creterion(y_pred, target)
+            losses += loss
+            pred = y_pred.max(1)[1]
             correct += pred.eq(target.view_as(pred)).sum().item()
 
-    test_loss /= len(test_data.dataset)
     print('Test set:  Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_data.dataset),
-        100. * correct / len(test_data.dataset)))
+        losses / num , correct, num, 100. * correct / num))
+
+    return float(losses/num), 100. * correct / num

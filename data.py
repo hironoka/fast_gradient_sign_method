@@ -1,6 +1,7 @@
 import torch
 from torchvision import datasets, transforms
 
+
 def train_loader(args, kwargs):
     train_data = torch.utils.data.DataLoader(
         datasets.MNIST('../data', train=True, download=True,

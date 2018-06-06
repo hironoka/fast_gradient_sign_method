@@ -5,12 +5,30 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
+import numpy as np
+import matplotlib.pyplot as plt
 
 import data, model
 from train import train_epoch, test_epoch
 
+def save_graph_image(epoch, train_losses, train_accuracies, test_losses, test_accuracies):
+    # import pdb; pdb.set_trace()
+    x = np.array(range(1,epoch+1))
+    acc_y1 = np.array(train_accuracies)
+    acc_y2 = np.array(test_accuracies)
+
+    loss_y1 = np.array(train_losses)
+    loss_y2 = np.array(test_losses)
+
+    plt.plot(x, acc_y1, linestyle="solid")
+    plt.plot(x, acc_y2, linestyle="dashed")
+    plt.plot(x, loss_y1, linestyle="dashdot")
+    plt.plot(x, loss_y2, linestyle="dotted")
+    # plt.legend((acc_y1[0], acc_y2[0], loss_y1[0], loss_y2[0]), ("Train Accuracy", "Test Accuracy", "Train Loss", "Test Loss"), loc=2)
+    plt.savefig('graph.png')
+
 parser = argparse.ArgumentParser(description='MNIST TRAINING')
-parser.add_argument('--epochs', type=int, default=10,
+parser.add_argument('--epochs', type=int, default=200,
                     help='Epoch')
 parser.add_argument('--gpu', type=bool, default=False,
                     help='Use gpu or not')
@@ -46,9 +64,18 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr)
 # optimizer = optim.Adam(net.parameters(), lr = 0.0001)
 
 # train
+train_losses, train_accuracies = [],[]
+test_losses,  test_accuracies  = [],[]
+
 for epoch in range(1, args.epochs + 1):
     print("Epoch: {}".format(epoch))
-    train_epoch(args, net, device, train_data, optimizer, epoch)
-    test_epoch(args, net, device, test_data)
+    train_loss, train_accuracy = train_epoch(args, net, device, train_data, optimizer, epoch)
+    test_loss , test_accuracy  = test_epoch(args, net, device, test_data)
 
+    train_losses.append(train_loss)
+    test_losses.append(test_loss)
+    train_accuracies.append(train_accuracy)
+    test_accuracies.append(test_accuracy)
+
+save_graph_image(epoch, train_losses, train_accuracies, test_losses, test_accuracies)
 torch.save(net.state_dict(), 'mnist_model_params.pth')

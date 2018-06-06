@@ -10,19 +10,17 @@ import random
 import model
 
 
-
 def save_image(x, filename):
     img = transforms.ToPILImage()(x.view(-1,28,28))
     img = img.convert('RGB')
     img.save(filename)
 
-    
+
 def generate_adversarial_examples(args):
     eps = args.eps
 
     # data
     data, target = np.load('./data/image.npy'), np.load('./data/labels.npy')
-
     i = random.randint(0, len(data)-1)
     x, y = torch.from_numpy(data[i]).view(-1,1,28,28), torch.from_numpy(np.array([target[i]]))
     x.requires_grad=True
@@ -33,8 +31,9 @@ def generate_adversarial_examples(args):
     param = torch.load('mnist_model_params.pth')
     net.load_state_dict(param)
 
+
     y_pred = net(x)
-   
+
     creterion = nn.CrossEntropyLoss()
     loss = creterion(y_pred, y)
     loss.backward()
@@ -45,11 +44,11 @@ def generate_adversarial_examples(args):
 
     adv_y_pred = net(adv)
 
-    save_image(x, 'x.png')
-    save_image(x.grad, 'noize.png')
-    save_image(adv, 'adv_sample.png')
+    save_image(x, 'result/x.png')
+    save_image(x.grad, 'result/noize.png')
+    save_image(adv, 'result/adv_sample.png')
     print('y: ', int(y), ' y_pred: ', int(y_pred.max(1)[1]), ' adv_y_pred: ', int(adv_y_pred.max(1)[1]))
- 
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MNIST TRAINING')
