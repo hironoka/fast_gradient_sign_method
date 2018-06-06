@@ -28,7 +28,7 @@ def generate_adversarial_examples(args):
 
     # model
     net = model.MnistClassifer()
-    param = torch.load('mnist_model_params.pth')
+    param = torch.load('mnist_model_params.pth', map_location='cpu')
     net.load_state_dict(param)
 
 
@@ -48,7 +48,6 @@ def generate_adversarial_examples(args):
     save_image(x.grad, 'result/noize.png')
     save_image(adv, 'result/adv_sample.png')
     print('y: ', int(y), ' y_pred: ', int(y_pred.max(1)[1]), ' adv_y_pred: ', int(adv_y_pred.max(1)[1]))
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MNIST TRAINING')
